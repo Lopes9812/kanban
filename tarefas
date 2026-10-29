@@ -1,7 +1,7 @@
 Pessoa A
 Criar o repositório Git e a estrutura de pastas (app/, src/, test/).
 Escrever Model.hs com Estado, Prioridade, TarefaId, Tarefa, Quadro e ArvoreDeps, e fazer commit logo, para B e C começarem.
-Escrever o esqueleto de Domain.hs com todas as assinaturas e undefined no corpo.
+Escrever o esqueleto de Domain.hs com todas as assinaturas e undefined no corpo para os restantes irem vendo.
 Confirmar que ghc -isrc app/Main.hs compila nas máquinas dos três.
 Escrever Main.hs de demonstração.
 Rever o trabalho de B e C e juntar tudo.
