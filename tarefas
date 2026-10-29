@@ -1,0 +1,27 @@
+Pessoa A
+Criar o repositório Git e a estrutura de pastas (app/, src/, test/).
+Escrever Model.hs com Estado, Prioridade, TarefaId, Tarefa, Quadro e ArvoreDeps, e fazer commit logo, para B e C começarem.
+Escrever o esqueleto de Domain.hs com todas as assinaturas e undefined no corpo.
+Confirmar que ghc -isrc app/Main.hs compila nas máquinas dos três.
+Escrever Main.hs de demonstração.
+Rever o trabalho de B e C e juntar tudo.
+README: requisitos, compilar/executar e estrutura.
+
+
+Pessoa B
+dependenciasTransitivas :: TarefaId -> Quadro -> [TarefaId], com lista de visitados.
+temCiclo :: Quadro -> Bool.
+construirArvore :: TarefaId -> Quadro -> Maybe ArvoreDeps.
+Uma função simples sobre a árvore (por exemplo profundidade).
+Quadro de exemplo com ciclo e outro com cadeia longa.
+Testes das suas funções.
+Preparar a explicação oral das suas funções.
+
+
+Pessoa C
+procurarTarefa, adicionarTarefa, removerTarefa.
+tarefasPorEstado, dependenciasDiretas, contarPorEstado.
+Sample.hs: quadro normal (5 a 8 tarefas) e quadro vazio.
+Pelo menos 2 testes por função.
+README: descrição do projeto e funcionalidades.
+Preparar a explicação oral de procurarTarefa e removerTarefa.
