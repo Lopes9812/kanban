@@ -24,5 +24,6 @@ main :: IO ()
 main = do
     putStrLn "Gestor Kanban com Dependencias"
     putStrLn "Projeto de Programacao Funcional em Haskell"
+    putStrLn "Em desenvolvimento"
     print tarefa0
     print tarefa1
