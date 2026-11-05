@@ -36,6 +36,7 @@ dependenciasTransitivas id quadro =
          | elem x visitado = aux xs visitado quadro
          |  otherwise = aux (xs ++ dependenciasDiretas x quadro) (x:visitado) quadro
 
+
 temCiclo :: Quadro -> Bool
 temCiclo quadro = verificarQuadro quadro quadro
     where
@@ -53,13 +54,38 @@ temCiclo quadro = verificarQuadro quadro quadro
 
         verificarDeps :: [TarefaId] -> [TarefaId] -> Quadro -> Bool
         verificarDeps [] _ _ = False
-
         verificarDeps (x:xs) caminho q
             | aux x caminho q = True
             | otherwise = verificarDeps xs caminho q
 
+
 construirArvore :: TarefaId -> Quadro -> Maybe ArvoreDeps
-construirArvore = undefined
+construirArvore id quadro = aux id [] quadro
+    where
+        aux :: TarefaId -> [TarefaId] -> Quadro -> Maybe ArvoreDeps
+        aux x caminho quadro
+            | elem x caminho = Nothing          
+            | otherwise =
+                case procurarTarefa x quadro of
+                    Nothing -> Nothing
+                    Just tarefa ->
+                        case construirFilhos (dependenciasDiretas x quadro) novoCaminho quadro of
+                            Nothing -> Nothing
+                            Just filhos -> Just (No tarefa filhos)
+            where
+                novoCaminho = x : caminho
+
+        construirFilhos :: [TarefaId] -> [TarefaId] -> Quadro -> Maybe [ArvoreDeps]
+        construirFilhos [] _ _ = Just []
+        construirFilhos (x:xs) caminho quadro =
+            case aux x caminho quadro of
+                Nothing -> Nothing
+                Just arvore ->
+                    case construirFilhos xs caminho quadro of
+                        Nothing -> Nothing
+                        Just restantes -> Just (arvore : restantes)
+
 
 profundidade :: ArvoreDeps -> Int
-profundidade = undefined
+profundidade (No _ []) = 1
+profundidade (No _ filhos) = 1 + maximum(map profundidade filhos)
