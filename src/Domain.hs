@@ -11,19 +11,28 @@ procurarTarefa procurado (t:ts)
 
 
 adicionarTarefa :: Tarefa -> Quadro -> Either String Quadro
-adicionarTarefa = undefined
+adicionarTarefa t quadro =
+    case procurarTarefa (tarefaId t) quadro of
+        Just _  -> Left ("Já existe uma tarefa com o id " ++ show (tarefaId t))
+        Nothing -> Right (quadro ++ [t])
 
 removerTarefa :: TarefaId -> Quadro -> Quadro
-removerTarefa = undefined
+removerTarefa _ [] = []
+removerTarefa id (t:ts)
+    | tarefaId t == id = ts
+    | otherwise        = t : removerTarefa id ts
 
 tarefasPorEstado :: Estado -> Quadro -> [Tarefa]
-tarefasPorEstado = undefined
+tarefasPorEstado e quadro = filter (\t -> estado t == e) quadro
 
 dependenciasDiretas :: TarefaId -> Quadro -> [TarefaId]
-dependenciasDiretas = undefined
+dependenciasDiretas id quadro =
+    case procurarTarefa id quadro of
+        Nothing -> []
+        Just t  -> dependencias t
 
 contarPorEstado :: Estado -> Quadro -> Int
-contarPorEstado = undefined
+contarPorEstado e quadro = length (tarefasPorEstado e quadro)
 
 -- Pessoa B: análise das dependências
 dependenciasTransitivas :: TarefaId -> Quadro -> [TarefaId]
