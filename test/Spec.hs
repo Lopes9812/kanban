@@ -5,126 +5,118 @@ import Model
 import Sample
 import Data.List (sort)
 
-testeProcurarTarefa ::String
-testeProcurarTarefa =
-    let res1=
-            case procurarTarefa 1 quadroExemplo of
-                Just tarefa
-                    | tarefaId tarefa == 1 -> "sucesso"
-                    | otherwise-> "falhou: foi encontrada tarefa com ID errado. "
-                Nothing ->  "falhou (Tarefa com ID 1 não encontrada)"
-        res2=
-            case procurarTarefa (-1) quadroExemplo of
-                Just tarefa -> "falhou: encontrou tarefa que não deveria de existir."
-                Nothing -> "sucesso"
-    in "Procurar tarefa existente: "++ res1
-        ++ "\nProcurar tarefa inexistente: "++ res2
+testFindTask :: String
+testFindTask =
+    let result1 =
+            case findTask 1 exampleBoard of
+                Just task
+                    | taskId task == 1 -> "Passed"
+                    | otherwise -> "Failed: a task with the wrong ID was found."
+                Nothing -> "Failed: task with ID 1 was not found."
+        result2 =
+            case findTask (-1) exampleBoard of
+                Just _ -> "Failed: a task was found when none should exist."
+                Nothing -> "Passed"
+    in "Find existing task: " ++ result1
+       ++ "\nFind non-existing task: " ++ result2
 
-testeAdicionarTarefa :: String
-testeAdicionarTarefa =
-    let res1 =
-            case adicionarTarefa tarefa7 quadroExemplo of
-                Left _  -> "Falhou"
-                Right _ -> "Sucesso"
+testAddTask :: String
+testAddTask =
+    let result1 =
+            case addTask task7 exampleBoard of
+                Left _  -> "Failed"
+                Right _ -> "Passed"
+        result2 =
+            case addTask task1 exampleBoard of
+                Left _  -> "Passed"
+                Right _ -> "Failed: a task with a duplicate ID was added."
+    in "Add new task: " ++ result1
+       ++ "\nAdd duplicate task: " ++ result2
 
-        res2 =
-            case adicionarTarefa tarefa1 quadroExemplo of
-                Left _  -> "Sucesso"
-                Right _ -> "Falhou: adicionou uma tarefa com ID duplicado"
+testRemoveTask :: String
+testRemoveTask =
+    let result1 =
+            case removeTask 6 exampleBoard of
+                Left _  -> "Failed"
+                Right _ -> "Passed"
+        result2 =
+            case removeTask (-1) exampleBoard of
+                Left _  -> "Passed"
+                Right _ -> "Failed"
+    in "Remove existing task: " ++ result1
+       ++ "\nRemove non-existing task: " ++ result2
 
-    in "Adicionar tarefa nova: " ++ res1
-       ++ "\nAdicionar tarefa duplicada: " ++ res2
+testStatuses :: String
+testStatuses =
+    let result1 =
+            if countByStatus Todo exampleBoard == 2
+                then "Passed"
+                else "Failed: incorrect Todo count"
+        result2 =
+            if countByStatus Doing exampleBoard == 2
+                then "Passed"
+                else "Failed: incorrect Doing count"
+    in "Count Todo tasks: " ++ result1
+       ++ "\nCount Doing tasks: " ++ result2
 
-testeRemoverTarefa :: String
-testeRemoverTarefa=
-    let res1 =
-            case removerTarefa 6 quadroExemplo of
-                Left _  -> "Falhou"
-                Right _ -> "Sucesso"
+testDependencies :: String
+testDependencies =
+    let result1 =
+            if sort (directDependencies 4 exampleBoard) == [3]
+                then "Passed"
+                else "Failed"
+        result2 =
+            if sort (transitiveDependencies 6 exampleBoard) == [1, 2, 3, 4, 5]
+                then "Passed"
+                else "Failed"
+    in "Direct dependencies: " ++ result1
+       ++ "\nTransitive dependencies: " ++ result2
 
-        res2 =
-            case removerTarefa (-1) quadroExemplo of
-                Left _  -> "sucesso"
-                Right _ -> "Falhou"
+testCycles :: String
+testCycles =
+    let result1 =
+            if hasCycle boardWithCycle
+                then "Passed"
+                else "Failed: cycle was not detected"
+        result2 =
+            if not (hasCycle exampleBoard)
+                then "Passed"
+                else "Failed: a non-existent cycle was detected"
+    in "Detect existing cycle: " ++ result1
+       ++ "\nDetect absent cycle: " ++ result2
 
-    in "Remover tarefa existente: " ++ res1
-       ++ "\nRemover tarefa nao existente: " ++ res2
+testBuildTree :: String
+testBuildTree =
+    let result1 =
+            case buildDependencyTree 4 exampleBoard of
+                Just tree ->
+                    if tree == expectedTree
+                        then "Passed"
+                        else "Failed: tree differs from expected result"
+                Nothing -> "Failed: could not build the tree"
+        result2 =
+            case buildDependencyTree 10 boardWithCycle of
+                Just _ -> "Failed: built a tree with circular dependencies"
+                Nothing -> "Passed"
+    in "Build dependency tree: " ++ result1
+       ++ "\nReject cyclic dependency tree: " ++ result2
 
-testeEstados :: String
-testeEstados =
-    let res1 =
-            if contarPorEstado Todo quadroExemplo == 2
-                then "Sucesso"
-                else "Falhou: contagem de Todo incorreta"
-
-        res2 =
-            if contarPorEstado Doing quadroExemplo == 2
-                then "Sucesso"
-                else "Falhou: contagem de Doing incorreta"
-
-    in "Contar tarefas Todo: " ++ res1
-       ++ "\nContar tarefas Doing: " ++ res2
-
-testeDependencias :: String
-testeDependencias =
-    let res1 =
-            if sort (dependenciasDiretas 4 quadroExemplo) == [3]
-                then "Sucesso"
-                else "Falhou"
-        res2 =
-            if sort (dependenciasTransitivas 6 quadroExemplo) == [1, 2, 3, 4, 5]
-                then "Sucesso"
-                else "Falhou"
-    in "Dependências diretas: " ++ res1
-       ++ "\nDependências transitivas: " ++ res2
-
-testeciclos:: String
-testeciclos=
-    let res1=
-            if (temCiclo quadrocomciclo)==True
-                then "sucesso"
-                else "erro: não detetou ciclo"
-        res2=
-            if (temCiclo quadroExemplo)== False
-                then "sucesso"
-                else "erro: detetou ciclo inexistente"
-    in"Deteção de ciclo existente: " ++ res1
-       ++ "\ndeteção de ciclo inexistente: " ++ res2
-
-testeConstruirArvore :: String
-testeConstruirArvore =
-    let res1=
-            case construirArvore 4 quadroExemplo of
-                Just arvore ->
-                    if arvore == arvoreEsperada
-                        then "Sucesso"
-                        else "Falhou: árvore diferente da esperada"
-
-                Nothing-> "Falhou: não conseguiu construir a árvore"
-        res2=
-            case construirArvore 10 quadrocomciclo of
-                Just arvore->"erro: criou arvore com dependencias circulares"
-                Nothing-> "sucesso"
-    in"criação de árvore: " ++ res1
-       ++ "\ncriação de árvore ilegal: " ++ res2
-
-testeProfundidade :: String
-testeProfundidade =
-    let res=
-            if profundidade arvoreEsperada == 4
-                then "Sucesso"
-                else "Falhou"
-
-    in "Profundidade de árvore: " ++ res
+testTreeDepth :: String
+testTreeDepth =
+    let result =
+            if treeDepth expectedTree == 4
+                then "Passed"
+                else "Failed"
+    in "Tree depth: " ++ result
 
 main :: IO ()
 main = do
-    putStrLn "A executar testes..."
-    putStrLn testeProcurarTarefa
-    putStrLn testeAdicionarTarefa
-    putStrLn testeRemoverTarefa
-    putStrLn testeEstados
-    putStrLn testeDependencias
-    putStrLn testeciclos
-    putStrLn testeConstruirArvore
-    putStrLn testeProfundidade
+    putStrLn "Running tests..."
+    putStrLn testFindTask
+    putStrLn testAddTask
+    putStrLn testRemoveTask
+    putStrLn testStatuses
+    putStrLn testDependencies
+    putStrLn testCycles
+    putStrLn testBuildTree
+    putStrLn testTreeDepth
