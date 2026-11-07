@@ -94,19 +94,28 @@ testeciclos=
 testeConstruirArvore :: String
 testeConstruirArvore =
     let res1=
-        case construirArvore 4 quadroExemplo of
-            Just arvore ->
-                if arvore == arvoreEsperada
-                    then "Sucesso: árvore correta"
-                    else "Falhou: árvore diferente da esperada"
+            case construirArvore 4 quadroExemplo of
+                Just arvore ->
+                    if arvore == arvoreEsperada
+                        then "Sucesso"
+                        else "Falhou: árvore diferente da esperada"
 
-            Nothing -> "Falhou: não conseguiu construir a árvore"
+                Nothing-> "Falhou: não conseguiu construir a árvore"
         res2=
             case construirArvore 10 quadrocomciclo of
                 Just arvore->"erro: criou arvore com dependencias circulares"
                 Nothing-> "sucesso"
-    in"criação de ciclo: " ++ res1
-       ++ "\ncriação de ciclo ilegal: " ++ res2
+    in"criação de árvore: " ++ res1
+       ++ "\ncriação de árvore ilegal: " ++ res2
+
+testeProfundidade :: String
+testeProfundidade =
+    let res=
+            if profundidade arvoreEsperada == 4
+                then "Sucesso"
+                else "Falhou"
+
+    in "Profundidade de árvore: " ++ res
 
 main :: IO ()
 main = do
@@ -117,3 +126,5 @@ main = do
     putStrLn testeEstados
     putStrLn testeDependencias
     putStrLn testeciclos
+    putStrLn testeConstruirArvore
+    putStrLn testeProfundidade
