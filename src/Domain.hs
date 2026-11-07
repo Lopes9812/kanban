@@ -2,7 +2,6 @@ module Domain where
 
 import Model
 
--- Pessoa C: pesquisa, inserção, remoção e consultas, primeira ja fiz eu
 procurarTarefa :: TarefaId -> Quadro -> Maybe Tarefa
 procurarTarefa _ []= Nothing
 procurarTarefa procurado (t:ts)
@@ -16,14 +15,17 @@ adicionarTarefa t quadro =
         Just _  -> Left ("Já existe uma tarefa com o id " ++ show (tarefaId t))
         Nothing -> Right (quadro ++ [t])
 
+
 removerTarefa :: TarefaId -> Quadro -> Quadro
 removerTarefa _ [] = []
 removerTarefa id (t:ts)
     | tarefaId t == id = ts
     | otherwise        = t : removerTarefa id ts
 
+
 tarefasPorEstado :: Estado -> Quadro -> [Tarefa]
 tarefasPorEstado e quadro = filter (\t -> estado t == e) quadro
+
 
 dependenciasDiretas :: TarefaId -> Quadro -> [TarefaId]
 dependenciasDiretas id quadro =
@@ -34,7 +36,7 @@ dependenciasDiretas id quadro =
 contarPorEstado :: Estado -> Quadro -> Int
 contarPorEstado e quadro = length (tarefasPorEstado e quadro)
 
--- Pessoa B: análise das dependências
+
 dependenciasTransitivas :: TarefaId -> Quadro -> [TarefaId]
 dependenciasTransitivas id quadro =
     filter (/= id) (aux (dependenciasDiretas id quadro) [id] quadro)
