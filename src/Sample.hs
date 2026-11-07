@@ -2,119 +2,120 @@ module Sample where
 
 import Model
 
---tarefas para teste
-tarefa1 :: Tarefa
-tarefa1 = Tarefa
-    { tarefaId = 1
-    , titulo = "Planear o projeto"
-    , estado = Done
-    , prioridade = Alta
-    , prazo = Just "2026-11-10"
-    , dependencias = []
+-- Sample tasks used by the tests and demonstration
+task1 :: Task
+task1 = Task
+    { taskId = 1
+    , title = "Plan the project"
+    , status = Done
+    , priority = High
+    , deadline = Just "2026-11-10"
+    , dependencies = []
     }
 
-tarefa2 :: Tarefa
-tarefa2 = Tarefa
-    { tarefaId = 2
-    , titulo = "Modelar os dados"
-    , estado = Done
-    , prioridade = Alta
-    , prazo = Just "2026-11-12"
-    , dependencias = [1]
+task2 :: Task
+task2 = Task
+    { taskId = 2
+    , title = "Model the data"
+    , status = Done
+    , priority = High
+    , deadline = Just "2026-11-12"
+    , dependencies = [1]
     }
 
-tarefa3 :: Tarefa
-tarefa3 = Tarefa
-    { tarefaId = 3
-    , titulo = "Implementar as funcionalidades"
-    , estado = Doing
-    , prioridade = Alta
-    , prazo = Just "2026-11-15"
-    , dependencias = [2]
+task3 :: Task
+task3 = Task
+    { taskId = 3
+    , title = "Implement the features"
+    , status = Doing
+    , priority = High
+    , deadline = Just "2026-11-15"
+    , dependencies = [2]
     }
 
-tarefa4 :: Tarefa
-tarefa4 = Tarefa
-    { tarefaId = 4
-    , titulo = "Testar as funcionalidades"
-    , estado = Todo
-    , prioridade = Media
-    , prazo = Just "2026-11-18"
-    , dependencias = [3]
+task4 :: Task
+task4 = Task
+    { taskId = 4
+    , title = "Test the features"
+    , status = Todo
+    , priority = Medium
+    , deadline = Just "2026-11-18"
+    , dependencies = [3]
     }
 
-tarefa5 :: Tarefa
-tarefa5 = Tarefa
-    { tarefaId = 5
-    , titulo = "Preparar a documentação"
-    , estado = Doing
-    , prioridade = Baixa
-    , prazo = Nothing
-    , dependencias = [1]
+task5 :: Task
+task5 = Task
+    { taskId = 5
+    , title = "Prepare the documentation"
+    , status = Doing
+    , priority = Low
+    , deadline = Nothing
+    , dependencies = [1]
     }
 
-tarefa6 :: Tarefa
-tarefa6 = Tarefa
-    { tarefaId = 6
-    , titulo = "Rever o projeto"
-    , estado = Todo
-    , prioridade = Media
-    , prazo = Just "2026-11-20"
-    , dependencias = [4, 5]
+task6 :: Task
+task6 = Task
+    { taskId = 6
+    , title = "Review the project"
+    , status = Todo
+    , priority = Medium
+    , deadline = Just "2026-11-20"
+    , dependencies = [4, 5]
     }
 
-tarefa7 :: Tarefa
-tarefa7 = Tarefa
-    { tarefaId = 7
-    , titulo = "Criar testes"
-    , estado = Todo
-    , prioridade = Media
-    , prazo = Nothing
-    , dependencias = []
+task7 :: Task
+task7 = Task
+    { taskId = 7
+    , title = "Create tests"
+    , status = Todo
+    , priority = Medium
+    , deadline = Nothing
+    , dependencies = []
     }
 
-tarefaDuplicada :: Tarefa
-tarefaDuplicada = Tarefa
-    { tarefaId = 1
-    , titulo = "Tarefa duplicada"
-    , estado = Todo
-    , prioridade = Baixa
-    , prazo = Nothing
-    , dependencias = [10]
+duplicateTask :: Task
+duplicateTask = Task
+    { taskId = 1
+    , title = "Duplicate task"
+    , status = Todo
+    , priority = Low
+    , deadline = Nothing
+    , dependencies = [10]
     }
 
-tarefaciclo :: Tarefa
-tarefaciclo = Tarefa
-    { tarefaId = 10
-    , titulo = "Tarefa duplicada"
-    , estado = Todo
-    , prioridade = Baixa
-    , prazo = Nothing
-    , dependencias = [1]
+cyclicTask :: Task
+cyclicTask = Task
+    { taskId = 10
+    , title = "Cyclic task"
+    , status = Todo
+    , priority = Low
+    , deadline = Nothing
+    , dependencies = [1]
     }
--- Quadro completo com as tarefas de exemplo
 
-quadroExemplo :: Quadro
-quadroExemplo =
-    [ tarefa1
-    , tarefa2
-    , tarefa3
-    , tarefa4
-    , tarefa5
-    , tarefa6
-    ]
-quadrocomciclo :: Quadro
-quadrocomciclo =
-    [ tarefaDuplicada
-    , tarefaciclo  
+-- Example board containing the regular sample tasks
+exampleBoard :: Board
+exampleBoard =
+    [ task1
+    , task2
+    , task3
+    , task4
+    , task5
+    , task6
     ]
 
-arvoreEsperada :: ArvoreDeps
-arvoreEsperada =
-    No tarefa4
-        [ No tarefa3
-            [ No tarefa2
-                [ No tarefa1 []
+boardWithCycle :: Board
+boardWithCycle =
+    [ duplicateTask
+    , cyclicTask
+    ]
+
+expectedTree :: DependencyTree
+expectedTree =
+    Node task4
+        [ Node task3
+            [ Node task2
+                [ Node task1 []
                 ]
             ]
         ]
