@@ -6,21 +6,23 @@ import Sample
 
 main :: IO ()
 main = do
-    putStrLn "Gestor Kanban com Dependencias"
-    putStrLn "Projeto de Programacao Funcional em Haskell"
+    putStrLn "Kanban Task Manager"
+    putStrLn "Functional Programming Project"
     putStrLn ""
 
-    putStrLn "Tarefas em andamento:"
-    mapM_ print (tarefasPorEstado Doing quadroExemplo)
+    putStrLn "Tasks in progress:"
+    mapM_ print (tasksByStatus Doing exampleBoard)
 
     putStrLn ""
-    putStrLn "Pesquisa da tarefa com ID 6:"
-    print (procurarTarefa 6 quadroExemplo)
+    putStrLn "Task with ID 6:"
+    case findTask 6 exampleBoard of
+        Just task -> print task
+        Nothing -> putStrLn "Task not found."
 
     putStrLn ""
-    putStrLn "Dependencias transitivas da tarefa com ID 6:"
-    print (dependenciasTransitivas 6 quadroExemplo)
+    putStrLn "Transitive dependencies of task 6:"
+    print (transitiveDependencies 6 exampleBoard)
 
     putStrLn ""
-    putStrLn "O quadro de exemplo tem ciclos?"
-    print (temCiclo quadroExemplo)
+    putStrLn "Does the example board contain a cycle?"
+    print (hasCycle exampleBoard)
