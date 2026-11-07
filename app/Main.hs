@@ -24,5 +24,8 @@ main = do
     print (transitiveDependencies 6 exampleBoard)
 
     putStrLn ""
-    putStrLn "Does the example board contain a cycle?"
-    print (hasCycle exampleBoard)
+    putStrLn "Does the example board contain a closed cycle?"
+    if hasCycle exampleBoard==True then
+        putStrLn "Yes"
+    else
+        putStrLn "No"
