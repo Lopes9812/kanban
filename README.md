@@ -1,60 +1,59 @@
-## Descrição
-Gestor Kanban com dependências entre tarefas, desenvolvido em Haskell
-para a UC de Programação Funcional (UTAD). Permite modelar tarefas com estado,
-prioridade, prazo e dependências, e validar a consistência do quadro (por exemplo,
-detetar ciclos).
+# Kanban Task Manager
 
-## Estado atual (Fase 1)
+A Kanban task manager with task dependencies, developed in Haskell for the Functional Programming course at UTAD. It models tasks with a status, priority, deadline, and dependencies, and checks board consistency (for example, by detecting dependency cycles).
 
-- Modelo de dados: `Estado`, `Prioridade`, `Tarefa`, `Quadro`, `ArvoreDeps`
-- Funções de pesquisa, inserção e remoção de tarefas
-- Dependências diretas e transitivas
-- Deteção de ciclos
-- Construção da árvore de dependências
+## Current status (Phase 1)
 
-## Requisitos
+- Data model: `Status`, `Priority`, `Task`, `Board`, `DependencyTree`
+- Task search, addition, and removal
+- Direct and transitive dependencies
+- Cycle detection
+- Dependency tree construction
+- Sample data and initial tests
+
+## Requirements
 
 - GHC (Glasgow Haskell Compiler)
 
-## Compilar e executar a demonstração
+## Compile and run the demonstration
 
-A partir da pasta raiz do projeto:
+From the project root directory:
 
 ```powershell
 ghc -isrc app/Main.hs -o haskban
 .\haskban.exe
 ```
 
-Também é possível executar diretamente, sem criar um executável:
+You can also run the program directly without creating an executable:
 
 ```powershell
 runghc -isrc app/Main.hs
 ```
 
-## Executar os testes
+## Run the tests
 
-Para executar os testes diretamente:
+Run the tests directly:
 
 ```powershell
 runghc -isrc test/Spec.hs
 ```
 
-Em alternativa, para compilar os testes e executar o programa gerado:
+Alternatively, compile the tests and run the generated executable:
 
 ```powershell
-ghc -isrc test/Spec.hs -o testes
-.\testes.exe
+ghc -isrc test/Spec.hs -o tests
+.\tests.exe
 ```
 
-## Estrutura do projeto
+## Project structure
 
 ```text
 haskban/
-├── app/Main.hs       -- demonstração das funções do domínio
+├── app/Main.hs       -- demonstration program
 ├── src/
-│   ├── Model.hs      -- tipos de dados
-│   ├── Domain.hs     -- funções puras do domínio
-│   └── Sample.hs     -- dados de exemplo
-├── test/Spec.hs      -- testes
+│   ├── Model.hs      -- data types
+│   ├── Domain.hs     -- pure domain functions
+│   └── Sample.hs     -- sample data
+├── test/Spec.hs      -- tests
 └── README.md
 ```
