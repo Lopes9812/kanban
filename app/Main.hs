@@ -1,30 +1,26 @@
 module Main where
 
 import Model
+import Domain
+import Sample
 
-tarefa0:: Tarefa
-tarefa0 = Tarefa
-        {tarefaId= 1
-        ,titulo="fazer pesquisa"
-        , estado=Todo
-        , prioridade=Media
-        , prazo=Nothing
-        , dependencias=[]
-    }
-tarefa1:: Tarefa
-tarefa1 = Tarefa
-        {tarefaId= 2
-        ,titulo="tratar pesquisa"
-        , estado=Todo
-        , prioridade=Media
-        , prazo=Nothing
-        , dependencias=[1]
-    }
 main :: IO ()
 main = do
     putStrLn "Gestor Kanban com Dependencias"
     putStrLn "Projeto de Programacao Funcional em Haskell"
-    putStrLn "Em desenvolvimento"
-    putStrLn "linha de testes"
-    print tarefa0
-    print tarefa1
+    putStrLn ""
+
+    putStrLn "Tarefas em andamento:"
+    mapM_ print (tarefasPorEstado Doing quadroExemplo)
+
+    putStrLn ""
+    putStrLn "Pesquisa da tarefa com ID 6:"
+    print (procurarTarefa 6 quadroExemplo)
+
+    putStrLn ""
+    putStrLn "Dependencias transitivas da tarefa com ID 6:"
+    print (dependenciasTransitivas 6 quadroExemplo)
+
+    putStrLn ""
+    putStrLn "O quadro de exemplo tem ciclos?"
+    print (temCiclo quadroExemplo)
