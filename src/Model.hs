@@ -1,45 +1,46 @@
 module Model where
 
--- Identificador único de uma tarefa
-type TarefaId = Int
+-- Unique identifier for a task
+type TaskId = Int
 
--- Estado atual de uma tarefa no quadro Kanban
-data Estado = Todo | Doing | Done
+-- Current status of a task on the Kanban board
+data Status = Todo | Doing | Done
     deriving (Eq, Show)
 
--- Prioridade de uma tarefa
-data Prioridade = Baixa | Media | Alta
+-- Priority assigned to a task
+data Priority = Low | Medium | High
     deriving (Eq, Ord, Show)
 
--- Dados que descrevem uma tarefa
-data Tarefa = Tarefa
-    { tarefaId     :: TarefaId
-    , titulo       :: String
-    , estado       :: Estado
-    , prioridade   :: Prioridade
-    , prazo        :: Maybe String
-    , dependencias :: [TarefaId]
+-- Data that describes a task
+data Task = Task
+    { taskId       :: TaskId
+    , title        :: String
+    , status       :: Status
+    , priority     :: Priority
+    , deadline     :: Maybe String
+    , dependencies :: [TaskId]
     } deriving (Eq)
-instance Show Tarefa where
-    show t =
-        "Tarefa #" ++ show (tarefaId t) ++
-        "\n  Titulo: " ++ titulo t ++
-        "\n  Estado: " ++ show (estado t) ++
-        "\n  Prioridade: " ++ show (prioridade t) ++
-        "\n  Prazo: " ++ mostrarPrazo (prazo t) ++
-        "\n  Dependencias: " ++ mostrarDependencias (dependencias t)
 
-mostrarPrazo:: Maybe String-> String
-mostrarPrazo Nothing ="Não definido"
-mostrarPrazo (Just prazo)=prazo
+instance Show Task where
+    show task =
+        "Task #" ++ show (taskId task) ++
+        "\n  Title: " ++ title task ++
+        "\n  Status: " ++ show (status task) ++
+        "\n  Priority: " ++ show (priority task) ++
+        "\n  Deadline: " ++ showDeadline (deadline task) ++
+        "\n  Dependencies: " ++ showDependencies (dependencies task)
 
-mostrarDependencias:: [TarefaId]->String
-mostrarDependencias [] = "nenhuma"
-mostrarDependencias ids =show ids
+showDeadline :: Maybe String -> String
+showDeadline Nothing = "Not set"
+showDeadline (Just date) = date
 
--- Um quadro é uma lista de tarefas
-type Quadro = [Tarefa]
+showDependencies :: [TaskId] -> String
+showDependencies [] = "none"
+showDependencies ids = show ids
 
--- Árvore que representa uma tarefa e as suas dependências
-data ArvoreDeps = No Tarefa [ArvoreDeps]
+-- A board is a list of tasks
+type Board = [Task]
+
+-- Tree representing a task and its dependencies
+data DependencyTree = Node Task [DependencyTree]
     deriving (Eq, Show)
