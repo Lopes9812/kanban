@@ -16,11 +16,12 @@ adicionarTarefa t quadro =
         Nothing -> Right (quadro ++ [t])
 
 
-removerTarefa :: TarefaId -> Quadro -> Quadro
-removerTarefa _ [] = []
-removerTarefa id (t:ts)
-    | tarefaId t == id = ts
-    | otherwise        = t : removerTarefa id ts
+
+removerTarefa :: TarefaId -> Quadro ->Either String Quadro
+removerTarefa id quadro=
+    if any (\t -> tarefaId t == id) quadro
+        then Right (filter (\t -> tarefaId t /= id) quadro)
+        else Left ("Não existe uma tarefa com o id dado ")
 
 
 tarefasPorEstado :: Estado -> Quadro -> [Tarefa]
@@ -71,31 +72,29 @@ temCiclo quadro = verificarQuadro quadro quadro
 
 
 construirArvore :: TarefaId -> Quadro -> Maybe ArvoreDeps
-construirArvore id quadro = aux id [] quadro
+construirArvore id quadro = aux id []
     where
-        aux :: TarefaId -> [TarefaId] -> Quadro -> Maybe ArvoreDeps
-        aux x caminho quadro
-            | elem x caminho = Nothing          
+        aux id caminho
+            | id `elem` caminho = Nothing
             | otherwise =
-                case procurarTarefa x quadro of
+                case procurarTarefa id quadro of
                     Nothing -> Nothing
                     Just tarefa ->
-                        case construirFilhos (dependenciasDiretas x quadro) novoCaminho quadro of
+                        let deps = dependenciasDiretas id quadro
+                            novoCaminho = id : caminho
+                        in case construirFilhos deps novoCaminho quadro of
                             Nothing -> Nothing
                             Just filhos -> Just (No tarefa filhos)
-            where
-                novoCaminho = x : caminho
 
         construirFilhos :: [TarefaId] -> [TarefaId] -> Quadro -> Maybe [ArvoreDeps]
-        construirFilhos [] _ _ = Just []
+        construirFilhos [] caminho quadro = Just []
         construirFilhos (x:xs) caminho quadro =
-            case aux x caminho quadro of
+            case aux x caminho of
                 Nothing -> Nothing
                 Just arvore ->
                     case construirFilhos xs caminho quadro of
                         Nothing -> Nothing
                         Just restantes -> Just (arvore : restantes)
-
 
 profundidade :: ArvoreDeps -> Int
 profundidade (No _ []) = 1
