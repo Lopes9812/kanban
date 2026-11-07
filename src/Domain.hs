@@ -2,100 +2,98 @@ module Domain where
 
 import Model
 
-procurarTarefa :: TarefaId -> Quadro -> Maybe Tarefa
-procurarTarefa _ []= Nothing
-procurarTarefa procurado (t:ts)
- |tarefaId t== procurado = Just t
- |otherwise=procurarTarefa procurado ts
+findTask :: TaskId -> Board -> Maybe Task
+findTask _ [] = Nothing
+findTask target (task:tasks)
+    | taskId task == target = Just task
+    | otherwise = findTask target tasks
 
+addTask :: Task -> Board -> Either String Board
+addTask task board =
+    case findTask (taskId task) board of
+        Just _  -> Left ("A task with ID " ++ show (taskId task) ++ " already exists")
+        Nothing -> Right (board ++ [task])
 
-adicionarTarefa :: Tarefa -> Quadro -> Either String Quadro
-adicionarTarefa t quadro =
-    case procurarTarefa (tarefaId t) quadro of
-        Just _  -> Left ("Já existe uma tarefa com o id " ++ show (tarefaId t))
-        Nothing -> Right (quadro ++ [t])
+removeTask :: TaskId -> Board -> Either String Board
+removeTask target board =
+    if any (\task -> taskId task == target) board
+        then Right (filter (\task -> taskId task /= target) board)
+        else Left "No task exists with the given ID"
 
+tasksByStatus :: Status -> Board -> [Task]
+tasksByStatus selectedStatus board =
+    filter (\task -> status task == selectedStatus) board
 
-
-removerTarefa :: TarefaId -> Quadro ->Either String Quadro
-removerTarefa id quadro=
-    if any (\t -> tarefaId t == id) quadro
-        then Right (filter (\t -> tarefaId t /= id) quadro)
-        else Left ("Não existe uma tarefa com o id dado ")
-
-
-tarefasPorEstado :: Estado -> Quadro -> [Tarefa]
-tarefasPorEstado e quadro = filter (\t -> estado t == e) quadro
-
-
-dependenciasDiretas :: TarefaId -> Quadro -> [TarefaId]
-dependenciasDiretas id quadro =
-    case procurarTarefa id quadro of
+directDependencies :: TaskId -> Board -> [TaskId]
+directDependencies target board =
+    case findTask target board of
         Nothing -> []
-        Just t  -> dependencias t
+        Just task -> dependencies task
 
-contarPorEstado :: Estado -> Quadro -> Int
-contarPorEstado e quadro = length (tarefasPorEstado e quadro)
+countByStatus :: Status -> Board -> Int
+countByStatus selectedStatus board =
+    length (tasksByStatus selectedStatus board)
 
-
-dependenciasTransitivas :: TarefaId -> Quadro -> [TarefaId]
-dependenciasTransitivas id quadro =
-    filter (/= id) (aux (dependenciasDiretas id quadro) [id] quadro)
+transitiveDependencies :: TaskId -> Board -> [TaskId]
+transitiveDependencies target board =
+    filter (/= target) (walk (directDependencies target board) [target] board)
     where
-        aux :: [TarefaId] -> [TarefaId] -> Quadro -> [TarefaId]
-        aux [] visitado _ = visitado
-        aux (x:xs) visitado quadro
-         | elem x visitado = aux xs visitado quadro
-         |  otherwise = aux (xs ++ dependenciasDiretas x quadro) (x:visitado) quadro
-
-
-temCiclo :: Quadro -> Bool
-temCiclo quadro = verificarQuadro quadro quadro
-    where
-        verificarQuadro [] _ = False
-        verificarQuadro (t:ts) quadro
-            | aux (tarefaId t) [] quadro = True
-            | otherwise = verificarQuadro ts quadro
-
-        aux x caminho quadro
-            | elem x caminho = True
-            | otherwise = verificarDeps deps novoCaminho quadro
-            where
-                novoCaminho = x : caminho
-                deps = dependenciasDiretas x quadro
-
-        verificarDeps :: [TarefaId] -> [TarefaId] -> Quadro -> Bool
-        verificarDeps [] _ _ = False
-        verificarDeps (x:xs) caminho q
-            | aux x caminho q = True
-            | otherwise = verificarDeps xs caminho q
-
-
-construirArvore :: TarefaId -> Quadro -> Maybe ArvoreDeps
-construirArvore id quadro = aux id []
-    where
-        aux id caminho
-            | id `elem` caminho = Nothing
+        walk :: [TaskId] -> [TaskId] -> Board -> [TaskId]
+        walk [] visited _ = visited
+        walk (current:remaining) visited currentBoard
+            | elem current visited =
+                walk remaining visited currentBoard
             | otherwise =
-                case procurarTarefa id quadro of
+                walk (remaining ++ directDependencies current currentBoard)
+                     (current:visited)
+                     currentBoard
+
+hasCycle :: Board -> Bool
+hasCycle board = checkBoard board board
+    where
+        checkBoard [] _ = False
+        checkBoard (task:remaining) currentBoard
+            | visit (taskId task) [] currentBoard = True
+            | otherwise = checkBoard remaining currentBoard
+
+        visit target path currentBoard
+            | elem target path = True
+            | otherwise = checkDependencies deps newPath currentBoard
+            where
+                newPath = target : path
+                deps = directDependencies target currentBoard
+
+        checkDependencies :: [TaskId] -> [TaskId] -> Board -> Bool
+        checkDependencies [] _ _ = False
+        checkDependencies (target:remaining) path currentBoard
+            | visit target path currentBoard = True
+            | otherwise = checkDependencies remaining path currentBoard
+
+buildDependencyTree :: TaskId -> Board -> Maybe DependencyTree
+buildDependencyTree target board = build target []
+    where
+        build current path
+            | current `elem` path = Nothing
+            | otherwise =
+                case findTask current board of
                     Nothing -> Nothing
-                    Just tarefa ->
-                        let deps = dependenciasDiretas id quadro
-                            novoCaminho = id : caminho
-                        in case construirFilhos deps novoCaminho quadro of
+                    Just task ->
+                        let deps = directDependencies current board
+                            newPath = current : path
+                        in case buildChildren deps newPath of
                             Nothing -> Nothing
-                            Just filhos -> Just (No tarefa filhos)
+                            Just children -> Just (Node task children)
 
-        construirFilhos :: [TarefaId] -> [TarefaId] -> Quadro -> Maybe [ArvoreDeps]
-        construirFilhos [] caminho quadro = Just []
-        construirFilhos (x:xs) caminho quadro =
-            case aux x caminho of
+        buildChildren :: [TaskId] -> [TaskId] -> Maybe [DependencyTree]
+        buildChildren [] _ = Just []
+        buildChildren (current:remaining) path =
+            case build current path of
                 Nothing -> Nothing
-                Just arvore ->
-                    case construirFilhos xs caminho quadro of
+                Just tree ->
+                    case buildChildren remaining path of
                         Nothing -> Nothing
-                        Just restantes -> Just (arvore : restantes)
+                        Just rest -> Just (tree : rest)
 
-profundidade :: ArvoreDeps -> Int
-profundidade (No _ []) = 1
-profundidade (No _ filhos) = 1 + maximum(map profundidade filhos)
+treeDepth :: DependencyTree -> Int
+treeDepth (Node _ []) = 1
+treeDepth (Node _ children) = 1 + maximum (map treeDepth children)
