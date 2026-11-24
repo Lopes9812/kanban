@@ -1,0 +1,215 @@
+PLANO DE TAREFAS — ETAPA 2
+Projeto: Kanban Task Manager (Haskell)
+Repositório: https://github.com/Lopes9812/kanban
+Base: Framework_para_Trabalho_Pratico_de_Programacao_Funcional.pdf
+
+OBJETIVO DA ETAPA 2
+A Etapa 2 corresponde à "Lógica funcional e transformação de dados". No final,
+o projeto deve ter a maioria da lógica de domínio implementada, utilização
+adequada de funções de ordem superior, pipelines com map/filter/folds e
+composição, tratamento explícito de erros com Maybe e/ou Either, testes de
+casos normais/limite/erro, separação entre lógica funcional e IO, e documentação
+atualizada.
+
+DIVISÃO DO TRABALHO
+
+============================================================
+PESSOA 1 — LÓGICA DE DOMÍNIO E VALIDAÇÃO
+Ficheiro principal: src/Domain.hs
+============================================================
+
+1. Rever as operações já existentes: findTask, addTask, removeTask,
+   directDependencies, transitiveDependencies, hasCycle e buildDependencyTree.
+2. Reforçar addTask:
+   - Não permitir IDs repetidos.
+   - Validar se todas as dependências indicadas existem no quadro.
+   - Não permitir que uma tarefa dependa de si própria.
+   - Não permitir que a inserção crie ciclos.
+3. Reforçar removeTask:
+   - Não permitir remover uma tarefa que ainda seja referenciada como
+     dependência por outras tarefas; devolver um erro explícito.
+4. Implementar updateTaskStatus:
+   - Alterar o estado de uma tarefa.
+   - Não permitir passar uma tarefa para Done enquanto existirem dependências
+     que não estejam concluídas.
+   - Devolver erro explícito se a tarefa não existir.
+5. Implementar validateBoard:
+   - Verificar IDs duplicados.
+   - Verificar dependências inexistentes.
+   - Verificar dependências de uma tarefa sobre si própria.
+   - Verificar ciclos.
+6. Usar Either String ... para operações que podem falhar e Maybe para
+   resultados que podem não existir.
+7. Acrescentar assinaturas de tipo explícitas e comentários curtos nas funções.
+
+ENTREGÁVEL:
+- src/Domain.hs atualizado.
+- Exemplos de utilização e resultados de erro coerentes.
+- Funções puras, sem operações de IO no módulo de domínio.
+
+============================================================
+PESSOA 2 — ESTATÍSTICAS E TRANSFORMAÇÃO FUNCIONAL
+Novo ficheiro principal: src/Analytics.hs
+============================================================
+
+1. Criar funções de consulta e filtragem:
+   - blockedTasks: tarefas que ainda têm dependências por concluir.
+   - readyTasks: tarefas ainda não concluídas cujas dependências estão todas
+     concluídas.
+   - overdueTasks: tarefas com prazo anterior à data recebida como argumento.
+   - Filtrar tarefas por prioridade e por estado, reutilizando funções
+     existentes sempre que adequado.
+2. Criar estatísticas:
+   - countByPriority: número de tarefas de uma prioridade.
+   - completionRate: percentagem de tarefas concluídas (devolver 0 quando o
+     quadro estiver vazio).
+3. Demonstrar a utilização apropriada de:
+   - map
+   - filter
+   - foldl ou foldr
+   - composição de funções (.)
+4. Construir pelo menos um pipeline que combine várias transformações, por
+   exemplo filtrar tarefas e depois transformar os resultados.
+5. Receber a data atual como argumento em overdueTasks; não ler a data do
+   sistema dentro da função. Usar o formato YYYY-MM-DD, consistente com os
+   exemplos atualmente guardados em Sample.hs.
+6. Manter todas as funções deste módulo puras e com assinaturas explícitas.
+
+NOTAS DE DEFINIÇÃO:
+- blockedTasks deve considerar bloqueada uma tarefa com pelo menos uma
+  dependência que não esteja no estado Done.
+- readyTasks deve considerar pronta uma tarefa que não esteja Done e cujas
+  dependências estejam todas Done.
+- overdueTasks deve ignorar tarefas sem prazo (deadline = Nothing).
+
+ENTREGÁVEL:
+- src/Analytics.hs.
+- Exemplos de utilização das consultas e estatísticas.
+- Demonstração clara de map, filter, folds e composição no código.
+
+============================================================
+PESSOA 3 — TESTES, INTEGRAÇÃO E DOCUMENTAÇÃO
+Ficheiros principais: test/Spec.hs, app/Main.hs e README.md
+============================================================
+
+1. Expandir test/Spec.hs para testar as funções novas da Pessoa 1:
+   - Inserção com ID duplicado.
+   - Inserção com dependências inexistentes.
+   - Inserção que criaria um ciclo.
+   - Remoção de tarefa ainda usada como dependência.
+   - Atualização de estado com dependências concluídas e não concluídas.
+   - Validação de quadros válidos e inválidos.
+2. Testar as funções da Pessoa 2:
+   - Tarefas bloqueadas e prontas.
+   - Tarefas atrasadas, incluindo tarefas sem prazo.
+   - Contagem por prioridade.
+   - Percentagem de conclusão, incluindo quadro vazio.
+3. Incluir casos normais, casos limite e situações de erro. Os testes devem
+   verificar resultados concretos, não apenas imprimir "Passed" ou "Failed".
+4. Integrar as funcionalidades em app/Main.hs:
+   - Demonstrar operações de domínio.
+   - Mostrar tarefas bloqueadas/prontas/atrasadas.
+   - Mostrar estatísticas do quadro.
+   - Manter o IO limitado à apresentação e interação com o exterior.
+5. Atualizar README.md:
+   - Descrever as funcionalidades da Etapa 2.
+   - Explicar a responsabilidade de cada módulo.
+   - Atualizar a estrutura do projeto.
+   - Documentar compilação, execução e testes.
+6. Integrar as alterações das Pessoas 1 e 2, resolver conflitos e confirmar que
+   o projeto compila e os testes passam.
+
+ENTREGÁVEIS:
+- test/Spec.hs atualizado.
+- app/Main.hs com demonstração integrada.
+- README.md atualizado.
+- Verificação final de compilação e execução dos testes.
+
+============================================================
+INTERFACES A COMBINAR ANTES DA IMPLEMENTAÇÃO
+============================================================
+
+As seguintes assinaturas são uma proposta inicial. O grupo deve confirmá-las
+antes de começar a implementar, para evitar incompatibilidades entre módulos.
+
+-- Pessoa 1: src/Domain.hs
+
+validateBoard :: Board -> Either String ()
+
+updateTaskStatus
+    :: TaskId -> Status -> Board -> Either String Board
+
+-- Pessoa 2: src/Analytics.hs
+
+blockedTasks :: Board -> [Task]
+
+readyTasks :: Board -> [Task]
+
+overdueTasks :: String -> Board -> [Task]
+
+countByPriority :: Priority -> Board -> Int
+
+completionRate :: Board -> Double
+
+NOTA:
+As funções já existentes no projeto devem ser reutilizadas sempre que possível.
+Estas assinaturas não obrigam a duplicar funcionalidades que já estejam
+implementadas. Caso o grupo decida alterar uma assinatura, deve avisar os
+restantes elementos antes de avançar.
+
+ORDEM DE EXECUÇÃO E COORDENAÇÃO
+
+1. Reunião inicial:
+   - Ler este plano e a secção 5.2 do protocolo.
+   - Confirmar as assinaturas das funções.
+   - Definir os casos de teste esperados.
+2. Trabalho em paralelo:
+   - Pessoa 1 trabalha em src/Domain.hs.
+   - Pessoa 2 cria src/Analytics.hs.
+   - Pessoa 3 prepara testes, documentação e demonstração, integrando as
+     alterações quando as interfaces estiverem estáveis.
+3. Integração:
+   - Juntar os módulos.
+   - Atualizar imports e demonstração.
+   - Resolver conflitos e garantir compatibilidade.
+4. Validação:
+   - Executar os testes.
+   - Compilar e executar a aplicação.
+   - Corrigir erros e testar casos limite.
+5. Preparação da apresentação:
+   - Cada elemento explica o seu contributo.
+   - Todos os elementos devem conseguir explicar a arquitetura global e as
+     principais decisões funcionais.
+
+COMANDOS DE VERIFICAÇÃO
+
+Executar a demonstração:
+    runghc -isrc app/Main.hs
+
+Compilar a aplicação:
+    ghc -isrc app/Main.hs -o haskban
+
+Executar os testes:
+    runghc -isrc test/Spec.hs
+
+Compilar os testes (se desejado):
+    ghc -isrc test/Spec.hs -o tests
+
+CRITÉRIOS DE CONCLUSÃO DA ETAPA 2
+
+[ ] A maioria da lógica de domínio está implementada.
+[ ] As operações tratam erros e valores ausentes com Maybe e/ou Either.
+[ ] Existem funções de ordem superior usadas de forma adequada.
+[ ] O código demonstra map, filter, folds e composição.
+[ ] Existem pipelines de transformação de dados.
+[ ] A lógica funcional está separada do IO.
+[ ] Os testes cobrem casos normais, limites e erros.
+[ ] A aplicação compila e a demonstração funciona.
+[ ] O README e a estrutura dos módulos estão atualizados.
+[ ] Todos os elementos conhecem e conseguem explicar o trabalho global.
+
+IMPORTANTE
+A Etapa 2 deve privilegiar a lógica funcional e a transformação de dados.
+Menus completos, leitura/parsing de ficheiros e uma aplicação final integrada
+são objetivos sobretudo da Etapa 3. Não gastar tempo a desenvolver essas partes
+antes de cumprir os requisitos desta fase.
