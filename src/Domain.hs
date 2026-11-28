@@ -1,6 +1,7 @@
 module Domain where
 
 import Model
+import Data.List (sortBy)
 
 findTask :: TaskId -> Board -> Maybe Task
 findTask _ [] = Nothing
@@ -24,6 +25,10 @@ tasksByStatus :: Status -> Board -> [Task]
 tasksByStatus selectedStatus board =
     filter (\task -> status task == selectedStatus) board
 
+tasksByPriority :: Priority -> Board -> [Task]
+tasksByPriority selectedPriority board =
+    filter (\task -> priority task == selectedPriority) board
+
 directDependencies :: TaskId -> Board -> [TaskId]
 directDependencies target board =
     case findTask target board of
@@ -33,6 +38,10 @@ directDependencies target board =
 countByStatus :: Status -> Board -> Int
 countByStatus selectedStatus board =
     length (tasksByStatus selectedStatus board)
+
+countByPriority :: Priority -> Board -> Int
+countByPriority selectedPriority =
+    length . tasksByPriority selectedPriority
 
 transitiveDependencies :: TaskId -> Board -> [TaskId]
 transitiveDependencies target board =
@@ -97,3 +106,59 @@ buildDependencyTree target board = build target []
 treeDepth :: DependencyTree -> Int
 treeDepth (Node _ []) = 1
 treeDepth (Node _ children) = 1 + maximum (map treeDepth children)
+
+blockedTasks :: Board -> [Task]
+blockedTasks board =
+    filter aux board
+    where
+        aux :: Task -> Bool
+        aux task =
+            any (\depId ->
+                case findTask depId board of
+                    Nothing  -> True
+                    Just dep -> status dep /= Done
+                ) (dependencies task) 
+
+readyTasks :: Board -> [Task]
+readyTasks board =
+    filter aux board
+    where
+        aux :: Task -> Bool
+        aux task = 
+            status task /= Done &&
+            all (\depId ->
+                case findTask depId board of
+                    Nothing  -> False
+                    Just dep -> status dep == Done
+                ) (dependencies task)
+
+overdueTasks :: String -> Board -> [Task]
+overdueTasks currentDate board =
+    filter aux board
+    where
+        aux :: Task -> Bool
+        aux task =
+            case deadline task of
+                Nothing   -> False
+                Just date -> date < currentDate
+
+completionRate :: Board -> Float
+completionRate [] = 0
+completionRate board =
+    (fromIntegral (countByStatus Done board) / fromIntegral (length board)) * 100
+
+-- Pipeline 1: Checks what high-priority tasks are ready to be completed (tasks which are not currently ready, but whose dependencies are)
+readyHighPriority :: Board -> [TaskId]
+readyHighPriority board =
+    (map taskId . tasksByPriority High . readyTasks) board
+
+-- Pipeline 2: Counts how many tasks of a certain priority (chosen by the user as input) are currently overdue and not listed as "done"
+countOverdueByPriority :: String -> Priority -> Board -> Int
+countOverdueByPriority currentDate selectedPriority =
+    foldr (\_ acc -> acc + 1) 0 . filter (\task -> status task /= Done) . tasksByPriority selectedPriority . overdueTasks currentDate
+
+-- Pipeline 3: Gives a list of titles of blocked tasks (tasks whose dependencies aren't completed), organized by priority
+blockedTasksByPriority :: Board -> [String]
+blockedTasksByPriority =
+    map title .
+    sortBy (\task1 task2 -> compare (priority task1) (priority task2)) . blockedTasks
